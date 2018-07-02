@@ -11,7 +11,7 @@ entryexit = [[0, 0], [0, 0]]
 
 mapsize_x = shape[1]
 mapsize_y = shape[0]
-
+#adfaweighioearhoguaehrughtwaoiehio
 player_position = [0, 3]
 running = True
 hilite_char = False
