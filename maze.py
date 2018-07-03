@@ -4,7 +4,7 @@ import numpy
 from numpy.random import random_integers as rand
 
 
-#xdlol syepmunka
+#xdlol syepmunka nefijrkgbirghukwrkbjghiowegbeuwghiowl
 height = 40
 width = 80
 shape = ((height // 2) * 2 + 1, (width // 2) * 2 + 1)
