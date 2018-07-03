@@ -11,7 +11,6 @@ entryexit = [[0, 0], [0, 0]]
 
 mapsize_x = shape[1]
 mapsize_y = shape[0]
-#adfaweighioearhoguaehrughtwaoiehio
 player_position = [0, 3]
 running = True
 hilite_char = False
@@ -36,9 +35,9 @@ def draw(stdscr):
     global finish_game
     global running
     checkexit()
-    if finish_game == False:
+    if finish_game is False:
         stdscr.clear()
-        if show_map == True:
+        if show_map is True:
             for y in range(mapsize_y):
                 for x in range(mapsize_x):
                     if ((y == player_position[0]) and (
@@ -53,7 +52,7 @@ def draw(stdscr):
                                 stdscr.addstr('$', curses.color_pair(3))
                             else:
                                 cchar = getchar2(x, y)
-                                if ((hilite_char == True) and (
+                                if ((hilite_char is True) and (
                                         (x == player_position[1]) or (y == player_position[0]))):
                                     stdscr.addstr(cchar, curses.color_pair(5))
                                 else:
@@ -84,7 +83,7 @@ def draw(stdscr):
                                 else:
                                     cchar = getchar2(
                                         player_position[1] + x, player_position[0] + y)
-                                    if (hilite_char == True):
+                                    if (hilite_char is True):
                                         stdscr.addstr(
                                             cchar, curses.color_pair(5))
                                     else:
@@ -92,7 +91,7 @@ def draw(stdscr):
                                             cchar, curses.color_pair(4))
                     x += 1
                 y += 1
-                if (drawnline == True):
+                if (drawnline is True):
                     stdscr.addstr('\n')
                     drawnline = False
                 hilite_char = False
@@ -120,9 +119,9 @@ def input(key):
         hilite_char = True
     if (key == 'm'):
         global show_map
-        if show_map == False:
+        if show_map is False:
             show_map = True
-        elif show_map == True:
+        elif show_map is True:
             show_map = False
     if (key == 'w'):
         if player_position[0] > 0:
@@ -145,7 +144,7 @@ def input(key):
 def main(stdscr):
     colorinit()
     maze()
-    while running == True:
+    while running is True:
         draw(stdscr)
         key = stdscr.getkey()
         input(key)
