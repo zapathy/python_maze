@@ -5,6 +5,7 @@ from numpy.random import random_integers as rand
 
 
 #xdlol syepmunka nefijrkgbirghukwrkbjghiowegbeuwghiowl
+print(Feri mitortenik)
 height = 40
 width = 80
 shape = ((height // 2) * 2 + 1, (width // 2) * 2 + 1)
