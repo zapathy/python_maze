@@ -102,7 +102,10 @@ def input(key, game_state, maze_attributes):
     if (key == 'q'):
         game_state['running'] = False
     if (key == 'f'):
-        game_state['hilite_char'] = True
+        if game_state['hilite_char'] is False:
+            game_state['hilite_char'] = True
+        elif game_state['hilite_char'] is True:
+            game_state['hilite_char'] = False
     if (key == 'm'):
         if game_state['show_map'] is False:
             game_state['show_map'] = True
