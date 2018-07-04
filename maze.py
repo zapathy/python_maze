@@ -2,6 +2,7 @@ import curses
 from curses import wrapper
 import numpy
 from numpy.random import random_integers as rand
+# hello joe
 
 
 MAZE_ORIGINAL_HEIGHT = 40
