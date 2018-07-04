@@ -2,30 +2,14 @@ import curses
 from curses import wrapper
 import numpy
 from numpy.random import random_integers as rand
-gh='5h9g908h4598yh45h43h5'
-
-print("lol ez ez af + meg ezt is lol haha")
-print("Mitortenik JOE?????????????????????????????????????")
-#xdlol syepmunka nefijrkgbirghukwrkbjghiowegbeuwghiowl
-print("Feri mitortenik")
-height = 40
-width = 80
-shape = ((height // 2) * 2 + 1, (width // 2) * 2 + 1)
-Z = numpy.zeros(shape, dtype=bool)
-entryexit = [[0, 0], [0, 0]]
-
-mapsize_x = shape[1]
-mapsize_y = shape[0]
-player_position = [0, 3]
-running = True
-hilite_char = False
-show_map = False
-finish_game = False
 
 
-def getchar2(x, y):
-    global Z
-    retchar = str(Z[y, x])
+MAZE_ORIGINAL_HEIGHT = 40
+MAZE_ORIGINAL_WIDTH = 80
+
+
+def getchar2(x, y, maze_attributes):
+    retchar = str(maze_attributes['walls'][y, x])
     if retchar == 'True':
         retchar = '#'
     if retchar == 'False':
@@ -33,32 +17,27 @@ def getchar2(x, y):
     return retchar
 
 
-def draw(stdscr):
-    global hilite_char
-    global entryexit
-    global show_map
-    global finish_game
-    global running
-    checkexit()
-    if finish_game is False:
+def draw(stdscr, game_state, maze_attributes):
+    checkexit(game_state, maze_attributes)
+    if game_state['finish_game'] is False:
         stdscr.clear()
-        if show_map is True:
-            for y in range(mapsize_y):
-                for x in range(mapsize_x):
-                    if ((y == player_position[0]) and (
-                            x == player_position[1])):
+        if game_state['show_map'] is True:
+            for y in range(maze_attributes['shape'][0]):
+                for x in range(maze_attributes['shape'][1]):
+                    if ((y == game_state['player_position'][0]) and (
+                            x == game_state['player_position'][1])):
                         stdscr.addstr('@', curses.color_pair(1))
                     else:
-                        if ((y == entryexit[0][0]) and (x == entryexit[0][1])):
+                        if ((y == maze_attributes['entry'][0]) and (x == maze_attributes['entry'][1])):
                             stdscr.addstr('*', curses.color_pair(2))
                         else:
-                            if ((y == entryexit[1][0]) and (
-                                    x == entryexit[1][1])):
+                            if ((y == maze_attributes['exit'][0]) and (
+                                    x == maze_attributes['exit'][1])):
                                 stdscr.addstr('$', curses.color_pair(3))
                             else:
-                                cchar = getchar2(x, y)
-                                if ((hilite_char is True) and (
-                                        (x == player_position[1]) or (y == player_position[0]))):
+                                cchar = getchar2(x, y, maze_attributes)
+                                if ((game_state['hilite_char'] is True) and (
+                                        (x == game_state['player_position'][1]) or (y == game_state['player_position'][0]))):
                                     stdscr.addstr(cchar, curses.color_pair(5))
                                 else:
                                     stdscr.addstr(cchar, curses.color_pair(4))
@@ -70,25 +49,29 @@ def draw(stdscr):
                 drawnline = False
                 x = max * (-1)
                 while x <= max:
-                    if ((player_position[1] + x < 0) or (player_position[1] + x > mapsize_x - 1) or (
-                            player_position[0] + y < 0) or (player_position[0] + y > mapsize_y - 1)):
+                    if ((game_state['player_position'][1] + x < 0) or
+                            (game_state['player_position'][1] + x > maze_attributes['shape'][1] - 1) or (
+                            game_state['player_position'][0] + y < 0) or
+                            (game_state['player_position'][0] + y > maze_attributes['shape'][0] - 1)):
                         pass
                     else:
                         drawnline = True
                         if ((x == 0) and (y == 0)):
                             stdscr.addstr('@', curses.color_pair(1))
                         else:
-                            if ((player_position[1] + x == entryexit[0][1])
-                                    and (player_position[0] + y) == entryexit[0][0]):
+                            if ((game_state['player_position'][1] + x == maze_attributes['entry'][1])
+                                    and (game_state['player_position'][0] + y) == maze_attributes['entry'][0]):
                                 stdscr.addstr('*', curses.color_pair(2))
                             else:
-                                if ((player_position[1] + x == entryexit[1][1])
-                                        and (player_position[0] + y) == entryexit[1][0]):
+                                if ((game_state['player_position'][1] + x == maze_attributes['exit'][1])
+                                        and (game_state['player_position'][0] + y) == maze_attributes['exit'][0]):
                                     stdscr.addstr('$', curses.color_pair(3))
                                 else:
                                     cchar = getchar2(
-                                        player_position[1] + x, player_position[0] + y)
-                                    if (hilite_char is True):
+                                        game_state['player_position'][1] +
+                                        x, game_state['player_position'][0] + y,
+                                        maze_attributes)
+                                    if (game_state['hilite_char'] is True):
                                         stdscr.addstr(
                                             cchar, curses.color_pair(5))
                                     else:
@@ -99,11 +82,11 @@ def draw(stdscr):
                 if (drawnline is True):
                     stdscr.addstr('\n')
                     drawnline = False
-                hilite_char = False
+                game_state['hilite_char'] = False
         stdscr.refresh()
     else:
         stdscr.addstr('YOU WON')
-        running = False
+        game_state['running'] = False
         stdscr.getkey()
 
 
@@ -115,104 +98,112 @@ def colorinit():
     curses.init_pair(5, curses.COLOR_YELLOW, curses.COLOR_BLACK)
 
 
-def input(key):
+def input(key, game_state, maze_attributes):
     if (key == 'q'):
-        global running
-        running = False
+        game_state['running'] = False
     if (key == 'f'):
-        global hilite_char
-        hilite_char = True
+        game_state['hilite_char'] = True
     if (key == 'm'):
-        global show_map
-        if show_map is False:
-            show_map = True
-        elif show_map is True:
-            show_map = False
+        if game_state['show_map'] is False:
+            game_state['show_map'] = True
+        elif game_state['show_map'] is True:
+            game_state['show_map'] = False
     if (key == 'w'):
-        if player_position[0] > 0:
-            if getchar2(player_position[1], player_position[0] - 1) != '#':
-                player_position[0] -= 1
+        if game_state['player_position'][0] > 0:
+            if getchar2(game_state['player_position'][1], game_state['player_position'][0] - 1, maze_attributes) != '#':
+                game_state['player_position'][0] -= 1
     if (key == 's'):
-        if player_position[0] < mapsize_y:
-            if getchar2(player_position[1], player_position[0] + 1) != '#':
-                player_position[0] += 1
+        if game_state['player_position'][0] < maze_attributes['shape'][0]:
+            if getchar2(game_state['player_position'][1], game_state['player_position'][0] + 1, maze_attributes) != '#':
+                game_state['player_position'][0] += 1
     if (key == 'a'):
-        if player_position[1] > 0:
-            if getchar2(player_position[1] - 1, player_position[0]) != '#':
-                player_position[1] -= 1
+        if game_state['player_position'][1] > 0:
+            if getchar2(game_state['player_position'][1] - 1, game_state['player_position'][0], maze_attributes) != '#':
+                game_state['player_position'][1] -= 1
     if (key == 'd'):
-        if player_position[1] < mapsize_x:
-            if getchar2(player_position[1] + 1, player_position[0]) != '#':
-                player_position[1] += 1
+        if game_state['player_position'][1] < maze_attributes['shape'][1]:
+            if getchar2(game_state['player_position'][1] + 1, game_state['player_position'][0], maze_attributes) != '#':
+                game_state['player_position'][1] += 1
 
 
 def main(stdscr):
+
+    maze_attributes = {'entry': [
+        0, 0]}
+    maze_attributes['shape'] = (
+        (MAZE_ORIGINAL_HEIGHT // 2) * 2 + 1, (MAZE_ORIGINAL_WIDTH // 2) * 2 + 1)
+    maze_attributes['exit'] = [0, 0]
+    maze_attributes['walls'] = numpy.zeros(
+        maze_attributes['shape'], dtype=bool)
+
+    game_state = {"running": True, "hilite_char": False,
+                  "show_map": False, "finish_game": False, "player_position": [0, 0]}
     colorinit()
-    maze()
-    while running is True:
-        draw(stdscr)
+    maze(maze_attributes, game_state)
+    while game_state['running'] is True:
+        draw(stdscr, game_state, maze_attributes)
         key = stdscr.getkey()
-        input(key)
+        input(key, game_state, maze_attributes)
 
 
-def checkexit():
-    global player_position
-    global finish_game
-    if ((player_position[0] == entryexit[1][0]) and (
-            player_position[1] == entryexit[1][1])):
-        finish_game = True
+def checkexit(game_state, maze_attributes):
+    if ((game_state['player_position'][0] == maze_attributes['exit'][0]) and (
+            game_state['player_position'][1] == maze_attributes['exit'][1])):
+        game_state['finish_game'] = True
 
 
-def maze():
-    global Z
-    global shape
-    global height
-    global width
-    global entryexit
-    global player_position
+def maze(maze_attributes, game_state):
+
     complexity = .85
     density = .85
     # Only odd shapes
-
     # Adjust complexity and density relative to maze size
     # number of components
-    complexity = int(complexity * (5 * (shape[0] + shape[1])))
+    complexity = int(
+        complexity * (5 * (maze_attributes['shape'][0] + maze_attributes['shape'][1])))
     # size of components
-    density = int(density * ((shape[0] // 2) * (shape[1] // 2)))
+    density = int(
+        density * ((maze_attributes['shape'][0] // 2) * (maze_attributes['shape'][1] // 2)))
     # Build actual maze
 
     # Fill borders
-    Z[0, :] = Z[-1, :] = 1
-    Z[:, 0] = Z[:, -1] = 1
+    maze_attributes['walls'][0, :] = maze_attributes['walls'][-1, :] = 1
+    maze_attributes['walls'][:, 0] = maze_attributes['walls'][:, -1] = 1
     # Make aisles
     for i in range(density):
-        x, y = rand(0, shape[1] // 2) * 2, rand(0,
-                                                shape[0] // 2) * 2  # pick a random position
-        Z[y, x] = 1
+        x, y = rand(0, maze_attributes['shape'][1] // 2) * 2, rand(0,
+                                                                   maze_attributes['shape'][0] // 2) * 2
+        # pick a random position
+        maze_attributes['walls'][y, x] = 1
         for j in range(complexity):
             neighbours = []
             if x > 1:
                 neighbours.append((y, x - 2))
-            if x < shape[1] - 2:
+            if x < maze_attributes['shape'][1] - 2:
                 neighbours.append((y, x + 2))
             if y > 1:
                 neighbours.append((y - 2, x))
-            if y < shape[0] - 2:
+            if y < maze_attributes['shape'][0] - 2:
                 neighbours.append((y + 2, x))
             if len(neighbours):
                 y_, x_ = neighbours[rand(0, len(neighbours) - 1)]
-                if Z[y_, x_] == 0:
-                    Z[y_, x_] = 1
-                    Z[y_ + (y - y_) // 2, x_ + (x - x_) // 2] = 1
+                if maze_attributes['walls'][y_, x_] == 0:
+                    maze_attributes['walls'][y_, x_] = 1
+                    maze_attributes['walls'][y_ +
+                                             (y - y_) // 2, x_ + (x - x_) // 2] = 1
                     x, y = x_, y_
-    entryexit[0] = [0, 1]
-    entryexit[1] = [20, 40]
-    Z[entryexit[0][0], entryexit[0][1]] = 0
-    Z[entryexit[1][0], entryexit[1][1]] = 0
-    player_position[0] = entryexit[0][0]
-    player_position[1] = entryexit[0][1]
+    maze_attributes['entry'] = [0, 1]
+    maze_attributes['exit'] = [maze_attributes['shape']
+                               [0] // 2, maze_attributes['shape'][1] // 2]
 
-    return Z
+    maze_attributes['walls'][maze_attributes['entry']
+                             [0], maze_attributes['entry'][1]] = 0
+    maze_attributes['walls'][maze_attributes['exit']
+                             [0], maze_attributes['exit'][1]] = 0
+    game_state['player_position'][0] = maze_attributes['entry'][0]
+    game_state['player_position'][1] = maze_attributes['entry'][1]
+
+    return maze_attributes['walls']
 
 
 wrapper(main)
