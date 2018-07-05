@@ -40,10 +40,13 @@ def draw(stdscr, game_state, maze_attributes):
                                 else:
                                     cchar = getchar2(x, y, maze_attributes)
                                     if ((game_state['hilite_char'] is True) and (
-                                            (x == game_state['player_position'][1]) or (y == game_state['player_position'][0]))):
-                                        stdscr.addstr(cchar, curses.color_pair(5))
+                                            (x == game_state['player_position'][1]) or
+                                            (y == game_state['player_position'][0]))):
+                                        stdscr.addstr(
+                                            cchar, curses.color_pair(5))
                                     else:
-                                        stdscr.addstr(cchar, curses.color_pair(4))
+                                        stdscr.addstr(
+                                            cchar, curses.color_pair(4))
                 stdscr.addstr('\n')
         else:
             max = 4
@@ -72,7 +75,8 @@ def draw(stdscr, game_state, maze_attributes):
                                 else:
                                     if ((game_state['player_position'][1] + x == maze_attributes['exit'][1])
                                             and (game_state['player_position'][0] + y) == maze_attributes['exit'][0]):
-                                        stdscr.addstr('$', curses.color_pair(3))
+                                        stdscr.addstr(
+                                            '$', curses.color_pair(3))
                                     else:
                                         cchar = getchar2(
                                             game_state['player_position'][1] +
@@ -122,18 +126,26 @@ def input(key, game_state, maze_attributes):
         if game_state['player_position'][0] > 0:
             if getchar2(game_state['player_position'][1], game_state['player_position'][0] - 1, maze_attributes) != '#':
                 game_state['player_position'][0] -= 1
+                game_state['player_move'] = True
     if (key == 's'):
         if game_state['player_position'][0] < maze_attributes['shape'][0]:
             if getchar2(game_state['player_position'][1], game_state['player_position'][0] + 1, maze_attributes) != '#':
                 game_state['player_position'][0] += 1
+                game_state['player_move'] = True
     if (key == 'a'):
         if game_state['player_position'][1] > 0:
             if getchar2(game_state['player_position'][1] - 1, game_state['player_position'][0], maze_attributes) != '#':
                 game_state['player_position'][1] -= 1
+                game_state['player_move'] = True
     if (key == 'd'):
         if game_state['player_position'][1] < maze_attributes['shape'][1]:
             if getchar2(game_state['player_position'][1] + 1, game_state['player_position'][0], maze_attributes) != '#':
                 game_state['player_position'][1] += 1
+                game_state['player_move'] = True
+
+
+def enemy_move(game_state):
+    pass
 
 
 def main(stdscr):
@@ -148,13 +160,16 @@ def main(stdscr):
 
     game_state = {"running": True, "hilite_char": False,
                   "show_map": False, "finish_game": False, "player_position": [0, 0],
-                  "enemy_position": [10,10]}
+                  "enemy_position": [10, 10], "player_move": False}
     colorinit()
     maze(maze_attributes, game_state)
     while game_state['running'] is True:
         draw(stdscr, game_state, maze_attributes)
         key = stdscr.getkey()
         input(key, game_state, maze_attributes)
+        if game_state['player_move'] is True:
+            enemy_move(game_state)
+            game_state['player_move'] = False
 
 
 def checkexit(game_state, maze_attributes):
@@ -213,6 +228,13 @@ def maze(maze_attributes, game_state):
                              [0], maze_attributes['exit'][1]] = 0
     game_state['player_position'][0] = maze_attributes['entry'][0]
     game_state['player_position'][1] = maze_attributes['entry'][1]
+
+    game_state['enemy_position'][0] = rand(game_state['player_position'][0] + 10, maze_attributes['shape'][0])
+    game_state['enemy_position'][1] = rand(game_state['player_position'][1] + 10, maze_attributes['shape'][1])
+
+    while maze_attributes['walls'][game_state['enemy_position'][0],game_state['enemy_position'][1]] == True:
+        game_state['enemy_position'][0] += 1
+        game_state['enemy_position'][1] += 1
 
     return maze_attributes['walls']
 
