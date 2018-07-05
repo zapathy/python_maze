@@ -6,6 +6,7 @@ from numpy.random import random_integers as rand
 
 MAZE_ORIGINAL_HEIGHT = 40
 MAZE_ORIGINAL_WIDTH = 80
+DEBUG_PRINT_MESSAGE = ""
 
 
 def getchar2(x, y, maze_attributes):
@@ -157,17 +158,57 @@ def move_enemy_towards_player(game_state):
         game_state['enemy_position'][0] += 1
 
 
+def move_enemy_through_wall(game_state, maze_attributes):
+    while maze_attributes['walls'][game_state['enemy_position'][0], game_state['enemy_position'][1]] == 1:
+        move_enemy_towards_player(game_state)
+
+
+def enemy_movement_behaviour_type_0(game_state, maze_attributes):
+    move_enemy_towards_player(game_state)
+    move_enemy_through_wall(game_state, maze_attributes)
+
+
+def enemy_movement_behaviour_type_1(game_state, maze_attributes):
+    valid_directions = define_valid_directions(game_state, maze_attributes)
+    actual_direction = valid_directions[rand(0, len(valid_directions)-1)]
+    global DEBUG_PRINT_MESSAGE
+    DEBUG_PRINT_MESSAGE = actual_direction
+    if (actual_direction == 'up'):
+        game_state['enemy_position'][0] -= 1
+    if (actual_direction == 'down'):
+        game_state['enemy_position'][0] += 1
+    if (actual_direction == 'left'):
+        game_state['enemy_position'][1] -= 1
+    if (actual_direction == 'right'):
+        game_state['enemy_position'][1] += 1
+
+
+def define_valid_directions(game_state, maze_attributes):
+    return_directions = []
+    if (maze_attributes['walls'][game_state['enemy_position'][0]-1, game_state['enemy_position'][1]] == 0):
+        return_directions.append("up")
+    if (maze_attributes['walls'][game_state['enemy_position'][0]+1, game_state['enemy_position'][1]] == 0):
+        return_directions.append("down")
+    if (maze_attributes['walls'][game_state['enemy_position'][0], game_state['enemy_position'][1]-1] == 0):
+        return_directions.append("left")
+    if (maze_attributes['walls'][game_state['enemy_position'][0], game_state['enemy_position'][1]+1] == 0):
+        return_directions.append("right")
+    return return_directions
+
+
 def enemy_move(game_state, maze_attributes):
     player_x = game_state['player_position'][1]
     player_y = game_state['player_position'][0]
 
-    if (abs(game_state['enemy_position'][1] - player_x) > 10) or (abs(game_state['enemy_position'][0] - player_y) > 10):
-        move_enemy_towards_player(game_state)
-    else:
-        pass
+    if (abs(game_state['enemy_position'][1] - player_x) > 15) or (abs(game_state['enemy_position'][0] - player_y) > 15):
+        game_state['enemy_behaviour'] = 0
+    if (abs(game_state['enemy_position'][1] - player_x) < 8) and (abs(game_state['enemy_position'][0] - player_y) < 8):
+        game_state['enemy_behaviour'] = 1
 
-    while maze_attributes['walls'][game_state['enemy_position'][0], game_state['enemy_position'][1]] == 1:
-        move_enemy_towards_player(game_state)
+    if (game_state['enemy_behaviour'] == 0):
+        enemy_movement_behaviour_type_0(game_state, maze_attributes)
+    elif (game_state['enemy_behaviour'] == 1):
+        enemy_movement_behaviour_type_1(game_state, maze_attributes)
 
 
 def main(stdscr):
@@ -182,22 +223,42 @@ def main(stdscr):
 
     game_state = {"running": True, "hilite_char": False,
                   "show_map": False, "finish_game": False, "player_position": [0, 0],
-                  "enemy_position": [10, 10], "player_move": False}
+                  "enemy_position": [0, 0], "player_move": False, "enemy_behaviour": 0}
     colorinit()
     maze(maze_attributes, game_state)
     while game_state['running'] is True:
         draw(stdscr, game_state, maze_attributes)
+        stdscr.addstr(DEBUG_PRINT_MESSAGE)
         key = stdscr.getkey()
         input(key, game_state, maze_attributes)
         if game_state['player_move'] is True:
             enemy_move(game_state, maze_attributes)
             game_state['player_move'] = False
+        if ((game_state['player_position'][0] == game_state['enemy_position'][0]) and
+                (game_state['player_position'][1] == game_state['enemy_position'][1])):
+            stdscr.addstr('YOU DIED! GO BACK TO THE ENTRANCE')
+            set_starting_positions(game_state, maze_attributes)
+            stdscr.getkey()
 
 
 def checkexit(game_state, maze_attributes):
     if ((game_state['player_position'][0] == maze_attributes['exit'][0]) and (
             game_state['player_position'][1] == maze_attributes['exit'][1])):
         game_state['finish_game'] = True
+
+
+def set_starting_positions(game_state, maze_attributes):
+    game_state['player_position'][0] = maze_attributes['entry'][0]
+    game_state['player_position'][1] = maze_attributes['entry'][1]
+
+    game_state['enemy_position'] = [0, 0]
+    game_state['enemy_behaviour'] = 0
+
+    while maze_attributes['walls'][game_state['enemy_position'][0], game_state['enemy_position'][1]] == 1:
+        game_state['enemy_position'][0] = rand(
+            game_state['player_position'][0] + 10, maze_attributes['shape'][0]-1)
+        game_state['enemy_position'][1] = rand(
+            game_state['player_position'][1] + 10, maze_attributes['shape'][1]-1)
 
 
 def maze(maze_attributes, game_state):
@@ -248,17 +309,8 @@ def maze(maze_attributes, game_state):
                              [0], maze_attributes['entry'][1]] = 0
     maze_attributes['walls'][maze_attributes['exit']
                              [0], maze_attributes['exit'][1]] = 0
-    game_state['player_position'][0] = maze_attributes['entry'][0]
-    game_state['player_position'][1] = maze_attributes['entry'][1]
 
-    game_state['enemy_position'][0] = rand(
-        game_state['player_position'][0] + 10, maze_attributes['shape'][0])
-    game_state['enemy_position'][1] = rand(
-        game_state['player_position'][1] + 10, maze_attributes['shape'][1])
-
-    while maze_attributes['walls'][game_state['enemy_position'][0], game_state['enemy_position'][1]] is True:
-        game_state['enemy_position'][0] += 1
-        game_state['enemy_position'][1] += 1
+    set_starting_positions(game_state, maze_attributes)
 
     return maze_attributes['walls']
 
