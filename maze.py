@@ -28,19 +28,22 @@ def draw(stdscr, game_state, maze_attributes):
                             x == game_state['player_position'][1])):
                         stdscr.addstr('@', curses.color_pair(1))
                     else:
-                        if ((y == maze_attributes['entry'][0]) and (x == maze_attributes['entry'][1])):
-                            stdscr.addstr('*', curses.color_pair(2))
+                        if ((y == game_state['enemy_position'][0]) and (x == game_state['enemy_position'][1])):
+                            stdscr.addstr('&', curses.color_pair(1))
                         else:
-                            if ((y == maze_attributes['exit'][0]) and (
-                                    x == maze_attributes['exit'][1])):
-                                stdscr.addstr('$', curses.color_pair(3))
+                            if ((y == maze_attributes['entry'][0]) and (x == maze_attributes['entry'][1])):
+                                stdscr.addstr('*', curses.color_pair(2))
                             else:
-                                cchar = getchar2(x, y, maze_attributes)
-                                if ((game_state['hilite_char'] is True) and (
-                                        (x == game_state['player_position'][1]) or (y == game_state['player_position'][0]))):
-                                    stdscr.addstr(cchar, curses.color_pair(5))
+                                if ((y == maze_attributes['exit'][0]) and (
+                                        x == maze_attributes['exit'][1])):
+                                    stdscr.addstr('$', curses.color_pair(3))
                                 else:
-                                    stdscr.addstr(cchar, curses.color_pair(4))
+                                    cchar = getchar2(x, y, maze_attributes)
+                                    if ((game_state['hilite_char'] is True) and (
+                                            (x == game_state['player_position'][1]) or (y == game_state['player_position'][0]))):
+                                        stdscr.addstr(cchar, curses.color_pair(5))
+                                    else:
+                                        stdscr.addstr(cchar, curses.color_pair(4))
                 stdscr.addstr('\n')
         else:
             max = 4
@@ -59,24 +62,28 @@ def draw(stdscr, game_state, maze_attributes):
                         if ((x == 0) and (y == 0)):
                             stdscr.addstr('@', curses.color_pair(1))
                         else:
-                            if ((game_state['player_position'][1] + x == maze_attributes['entry'][1])
-                                    and (game_state['player_position'][0] + y) == maze_attributes['entry'][0]):
-                                stdscr.addstr('*', curses.color_pair(2))
+                            if ((game_state['player_position'][1] + x == game_state['enemy_position'][1])
+                                    and (game_state['player_position'][0] + y == game_state['enemy_position'][0])):
+                                stdscr.addstr('&', curses.color_pair(1))
                             else:
-                                if ((game_state['player_position'][1] + x == maze_attributes['exit'][1])
-                                        and (game_state['player_position'][0] + y) == maze_attributes['exit'][0]):
-                                    stdscr.addstr('$', curses.color_pair(3))
+                                if ((game_state['player_position'][1] + x == maze_attributes['entry'][1])
+                                        and (game_state['player_position'][0] + y == maze_attributes['entry'][0])):
+                                    stdscr.addstr('*', curses.color_pair(2))
                                 else:
-                                    cchar = getchar2(
-                                        game_state['player_position'][1] +
-                                        x, game_state['player_position'][0] + y,
-                                        maze_attributes)
-                                    if (game_state['hilite_char'] is True):
-                                        stdscr.addstr(
-                                            cchar, curses.color_pair(5))
+                                    if ((game_state['player_position'][1] + x == maze_attributes['exit'][1])
+                                            and (game_state['player_position'][0] + y) == maze_attributes['exit'][0]):
+                                        stdscr.addstr('$', curses.color_pair(3))
                                     else:
-                                        stdscr.addstr(
-                                            cchar, curses.color_pair(4))
+                                        cchar = getchar2(
+                                            game_state['player_position'][1] +
+                                            x, game_state['player_position'][0] + y,
+                                            maze_attributes)
+                                        if (game_state['hilite_char'] is True):
+                                            stdscr.addstr(
+                                                cchar, curses.color_pair(5))
+                                        else:
+                                            stdscr.addstr(
+                                                cchar, curses.color_pair(4))
                     x += 1
                 y += 1
                 if (drawnline is True):
@@ -140,7 +147,8 @@ def main(stdscr):
         maze_attributes['shape'], dtype=bool)
 
     game_state = {"running": True, "hilite_char": False,
-                  "show_map": False, "finish_game": False, "player_position": [0, 0]}
+                  "show_map": False, "finish_game": False, "player_position": [0, 0],
+                  "enemy_position": [10,10]}
     colorinit()
     maze(maze_attributes, game_state)
     while game_state['running'] is True:
