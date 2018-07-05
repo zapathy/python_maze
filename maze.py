@@ -144,8 +144,30 @@ def input(key, game_state, maze_attributes):
                 game_state['player_move'] = True
 
 
-def enemy_move(game_state):
-    pass
+def move_enemy_towards_player(game_state):
+    player_x = game_state['player_position'][1]
+    player_y = game_state['player_position'][0]
+    if game_state['enemy_position'][1] > player_x:
+        game_state['enemy_position'][1] -= 1
+    if game_state['enemy_position'][1] < player_x:
+        game_state['enemy_position'][1] += 1
+    if game_state['enemy_position'][0] > player_y:
+        game_state['enemy_position'][0] -= 1
+    if game_state['enemy_position'][0] < player_y:
+        game_state['enemy_position'][0] += 1
+
+
+def enemy_move(game_state, maze_attributes):
+    player_x = game_state['player_position'][1]
+    player_y = game_state['player_position'][0]
+
+    if (abs(game_state['enemy_position'][1] - player_x) > 10) or (abs(game_state['enemy_position'][0] - player_y) > 10):
+        move_enemy_towards_player(game_state)
+    else:
+        pass
+
+    while maze_attributes['walls'][game_state['enemy_position'][0], game_state['enemy_position'][1]] == 1:
+        move_enemy_towards_player(game_state)
 
 
 def main(stdscr):
@@ -168,7 +190,7 @@ def main(stdscr):
         key = stdscr.getkey()
         input(key, game_state, maze_attributes)
         if game_state['player_move'] is True:
-            enemy_move(game_state)
+            enemy_move(game_state, maze_attributes)
             game_state['player_move'] = False
 
 
@@ -229,10 +251,12 @@ def maze(maze_attributes, game_state):
     game_state['player_position'][0] = maze_attributes['entry'][0]
     game_state['player_position'][1] = maze_attributes['entry'][1]
 
-    game_state['enemy_position'][0] = rand(game_state['player_position'][0] + 10, maze_attributes['shape'][0])
-    game_state['enemy_position'][1] = rand(game_state['player_position'][1] + 10, maze_attributes['shape'][1])
+    game_state['enemy_position'][0] = rand(
+        game_state['player_position'][0] + 10, maze_attributes['shape'][0])
+    game_state['enemy_position'][1] = rand(
+        game_state['player_position'][1] + 10, maze_attributes['shape'][1])
 
-    while maze_attributes['walls'][game_state['enemy_position'][0],game_state['enemy_position'][1]] == True:
+    while maze_attributes['walls'][game_state['enemy_position'][0], game_state['enemy_position'][1]] is True:
         game_state['enemy_position'][0] += 1
         game_state['enemy_position'][1] += 1
 
