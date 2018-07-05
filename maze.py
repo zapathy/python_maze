@@ -6,7 +6,6 @@ from numpy.random import random_integers as rand
 
 MAZE_ORIGINAL_HEIGHT = 40
 MAZE_ORIGINAL_WIDTH = 80
-DEBUG_PRINT_MESSAGE = ""
 
 
 def getchar2(x, y, maze_attributes):
@@ -171,8 +170,6 @@ def enemy_movement_behaviour_type_0(game_state, maze_attributes):
 def enemy_movement_behaviour_type_1(game_state, maze_attributes):
     valid_directions = define_valid_directions(game_state, maze_attributes)
     actual_direction = valid_directions[rand(0, len(valid_directions)-1)]
-    global DEBUG_PRINT_MESSAGE
-    DEBUG_PRINT_MESSAGE = actual_direction
     if (actual_direction == 'up'):
         game_state['enemy_position'][0] -= 1
     if (actual_direction == 'down'):
