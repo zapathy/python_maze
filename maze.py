@@ -225,7 +225,6 @@ def main(stdscr):
     maze(maze_attributes, game_state)
     while game_state['running'] is True:
         draw(stdscr, game_state, maze_attributes)
-        stdscr.addstr(DEBUG_PRINT_MESSAGE)
         key = stdscr.getkey()
         input(key, game_state, maze_attributes)
         if game_state['player_move'] is True:
