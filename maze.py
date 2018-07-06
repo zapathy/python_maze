@@ -2,7 +2,12 @@ import curses
 from curses import wrapper
 import numpy
 from numpy.random import random_integers as rand
-# hello joe
+import pygame
+
+pygame.init()
+pygame.mixer.music.load('slender_foley.wav')
+pygame.mixer.music.play(-1)
+step = pygame.mixer.Sound('step.wav')
 
 
 MAZE_ORIGINAL_HEIGHT = 40
@@ -14,7 +19,7 @@ def getchar2(x, y, maze_attributes):
     if retchar == 'True':
         retchar = '#'
     if retchar == 'False':
-        retchar = '.'
+        retchar = ' '
     return retchar
 
 
@@ -110,18 +115,22 @@ def input(key, game_state, maze_attributes):
         elif game_state['show_map'] is True:
             game_state['show_map'] = False
     if (key == 'w'):
+        pygame.mixer.Sound.play(step)
         if game_state['player_position'][0] > 0:
             if getchar2(game_state['player_position'][1], game_state['player_position'][0] - 1, maze_attributes) != '#':
                 game_state['player_position'][0] -= 1
     if (key == 's'):
+        pygame.mixer.Sound.play(step)
         if game_state['player_position'][0] < maze_attributes['shape'][0]:
             if getchar2(game_state['player_position'][1], game_state['player_position'][0] + 1, maze_attributes) != '#':
                 game_state['player_position'][0] += 1
     if (key == 'a'):
+        pygame.mixer.Sound.play(step)
         if game_state['player_position'][1] > 0:
             if getchar2(game_state['player_position'][1] - 1, game_state['player_position'][0], maze_attributes) != '#':
                 game_state['player_position'][1] -= 1
     if (key == 'd'):
+        pygame.mixer.Sound.play(step)
         if game_state['player_position'][1] < maze_attributes['shape'][1]:
             if getchar2(game_state['player_position'][1] + 1, game_state['player_position'][0], maze_attributes) != '#':
                 game_state['player_position'][1] += 1
