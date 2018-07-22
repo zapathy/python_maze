@@ -1,5 +1,13 @@
 import numpy
 from numpy.random import random_integers as rand
+import pygame
+
+pygame.init()
+pygame.mixer.music.load('slender_foley.wav')
+pygame.mixer.music.play(-1)
+step = pygame.mixer.Sound('step.wav')
+#enemy_vision = pygame.mixer.Sound("slender_2.wav")
+#enemy_range = pygame.mixer.Sound('slender_3.wav')
 
 
 def initialize_maze():
